@@ -1,0 +1,25 @@
+{
+  "name": "vitruvio",
+  "version": "1.0.3",
+  "description": "Framework which extends JavaScript capabilities in order to allow developing OOP applications over an structural well designed architecture by defining: namespaces, classes, interfaces, enumerators, inheritance, exceptions and other resources.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "readmeFileName": "README.md",
+  "keywords": [
+    "Class",
+    "Namespace",
+    "Inheritance",
+    "Exception",
+    "Framework"
+  ],
+  "authors": [
+    "Yadir Hernandez <yadirhb@gmail.com>"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yadirhb/System.JS.git"
+  }
+}

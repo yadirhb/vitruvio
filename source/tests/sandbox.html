@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>SandBox</title>
+	<!--<script type="text/javascript">System = "System.com";</script>-->
+	<script type="text/javascript" src="../libs/require.js"></script>
+	<script type="text/javascript" src="../build/system-1.0.0-concat.js"></script>
+</head>
+<body>
+	<script type="text/javascript" src="js/TestNoConflict.js"></script>
+	<script type="text/javascript" src="js/TestCoreInheritance.js"></script>
+	<script type="text/javascript" src="js/TestNamespaces.js"></script>
+	<script type="text/javascript" src="js/TestClassSystem.js"></script>
+	<script type="text/javascript" src="js/TestClassDependencyLoader.js"></script>
+	<script type="text/javascript" src="js/TestEventEmitterClass.js"></script>
+	<script type="text/javascript" src="js/TestHttpClientClass.js"></script>
+	<script type="text/javascript" src="js/TestWebSocketClientClass.js"></script>
+	<script type="text/javascript">
+		/*var NoConflict = NoConflict || System.noConflict(true);
+		System = NoConflict;*/
+		System.enableDebug(true);
+		System.ready(function(System){
+			// Aliasing the Class function into System namespace
+			var using = System.using;
+			var Log = System.utils.Log;
+
+			System.setGlobal({});
+			
+			var Class = using("System.Class");
+			
+				Class("Animal.Mamifero",{
+					"name" : "Mamifero",
+					"constructor" : function(name){
+						this.name = name;
+					},
+					"getName" : function(){
+						return this.name;
+					}
+				});
+				
+				Class("Animal.Perro", {
+					"$extends": "Animal.Mamifero",
+					"constructor" : function(name){					
+						this.$super(name);
+					}
+				});
+				
+				Class("Animal.Perro.Peque",{
+					"$extends": "Animal.Perro",
+					"constructor" : function(name){					
+						this.$super(name);
+					},
+					"getName" : function(){
+						return this.name + " Something";
+					}
+				});
+				
+				Class("Animal.Perro.Chiguagua",{
+					"$extends": "Animal.Perro.Peque",
+					"constructor" : function(name){					
+						this.$super(name);
+						//alert(this.getName());
+					}
+				});
+				
+				Class("Exception.MyException",{					
+					"$extends" : System.Exception,
+					'constructor' : function(message){
+						this.$super(message,"MyException");
+					}
+				});
+
+			var a = new Animal.Perro.Chiguagua("Dinky");
+			document.body.appendChild(document.createTextNode("The dog's name's: " + a.getName()));
+				/// Test Super Class
+				try {
+					Class("RuntimeException",{						
+						'$extends' : 1
+					})
+				} catch(e){
+					Log.assert(true, e.name == "InvalidSuperClassException");
+				}
+				
+				try {
+					Class("RuntimeException",{						
+						'$extends' : true
+					})
+				} catch(e){
+					Log.assert(true, e.name == "InvalidSuperClassException");
+				}
+				
+				var errVal = "The parameters should be greats man";
+				var ex = new Exception.MyException(errVal);
+				try {
+					throw ex;
+				} catch(e) {
+					Log.assert(true, e instanceof Error, "e is not instanceof Error");
+					Log.assert(true, e instanceof System.Exception, "e is not instanceof System.Exception");
+					Log.assert(true, System.Exception instanceof Error, "System.Exception is not instanceof Error");
+					Log.log(true, e.name.toString() === "MyException", "e.name {"+e.name+"} not asserted to {MyException}");
+					Log.log(true, e.message === errVal, "e.message {"+e.message+"} not asserted to {"+errVal+"}");
+				}
+				
+				var m = new Animal.Mamifero("TestMammal");
+				
+				Log.log(true,Animal.Mamifero.getAllMethods().length == 2);
+				Log.log(true,Animal.Mamifero.getAllMethods().length == m.getClass().getAllMethods().length);
+
+				Log.assert(true, a.$super.$super instanceof Animal.Mamifero, "Super instance is not the right type");
+				Log.assert(true, a.getName() == "Dinky algo");
+				
+		});
+	</script>
+</body>
+</html>

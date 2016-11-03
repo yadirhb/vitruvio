@@ -1,0 +1,8 @@
+// Class Mammal.Dog extends BaseMammal implements IComparable, ISerializable
+Class("Mammal.Dog", {	
+	extends : BaseMammal,
+	implements : [IComparable, ISerializable],	
+	constructor : function(){
+		
+	}	
+});

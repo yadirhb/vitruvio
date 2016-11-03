@@ -1,0 +1,147 @@
+/**
+ * Created by yadirhb on 2/18/2016.
+ * JXON Snippet #3 - Mozilla Developer Network
+ *
+ * https://developer.mozilla.org/en-US/docs/JXON
+ * https://developer.mozilla.org/User:fusionchess
+ *
+ * This framework is released under the GNU Public License, version 3 or later.
+ * http://www.gnu.org/licenses/gpl-3.0-standalone.html
+ */
+Static.Class('runtime.serialization.json.JXONParser', {
+    'sValProp' : "keyValue",
+    'sAttrProp' : "keyAttributes",
+    'sAttrsPref' : "@", /* you can customize these values */
+    'aCache' : [],
+    'parseText' : function parseText (sValue) {
+        if (isNullValue(sValue)) { return null; }
+        if (isBooleanValue(sValue)) { return sValue.toLowerCase() === "true"; }
+        if (isFinite(sValue)) { return parseFloat(sValue); }
+        if (isFinite(Date.parse(sValue))) { return new Date(sValue); }
+        return sValue;
+    },
+    'createObjTree' : function createObjTree (oParentNode, nVerb, bFreeze, bNesteAttr) {
+
+        function objectify (vVal) {
+            return vVal === null ? new System.runtime.serialization.json.JXONTree() : vVal instanceof Object ? vVal : new vVal.constructor(vVal);
+        }
+
+        var
+            nLevelStart = this.aCache.length, bChildren = oParentNode.hasChildNodes(),
+            bAttributes = oParentNode.hasAttributes && oParentNode.hasAttributes(), bHighVerb = Boolean(nVerb & 2);
+
+        var
+            sProp, vContent, nLength = 0, sCollectedTxt = "",
+            vResult = bHighVerb ? {} : /* put here the default value for empty nodes: */ true;
+
+        if (bChildren) {
+            for (var oNode, nItem = 0; nItem < oParentNode.childNodes.length; nItem++) {
+                oNode = oParentNode.childNodes.item(nItem);
+                if (oNode.nodeType === 4) { sCollectedTxt += oNode.nodeValue; } /* nodeType is "CDATASection" (4) */
+                else if (oNode.nodeType === 3) { sCollectedTxt += oNode.nodeValue.trim(); } /* nodeType is "Text" (3) */
+                else if (oNode.nodeType === 1 && !oNode.prefix) { this.aCache.push(oNode); } /* nodeType is "Element" (1) */
+            }
+        }
+
+        var nLevelEnd = this.aCache.length, vBuiltVal = this.parseText(sCollectedTxt);
+
+        if (!bHighVerb && (bChildren || bAttributes)) { vResult = nVerb === 0 ? objectify(vBuiltVal) : {}; }
+
+        for (var nElId = nLevelStart; nElId < nLevelEnd; nElId++) {
+            sProp = this.aCache[nElId].nodeName.toLowerCase();
+            vContent = this.createObjTree(this.aCache[nElId], nVerb, bFreeze, bNesteAttr);
+            if (vResult.hasOwnProperty(sProp)) {
+                if (vResult[sProp].constructor !== Array) { vResult[sProp] = [vResult[sProp]]; }
+                vResult[sProp].push(vContent);
+            } else {
+                vResult[sProp] = vContent;
+                nLength++;
+            }
+        }
+
+        if (bAttributes) {
+
+            var
+                nAttrLen = oParentNode.attributes.length,
+                sAPrefix = bNesteAttr ? "" : this.sAttrsPref, oAttrParent = bNesteAttr ? {} : vResult;
+
+            for (var oAttrib, nAttrib = 0; nAttrib < nAttrLen; nLength++, nAttrib++) {
+                oAttrib = oParentNode.attributes.item(nAttrib);
+                oAttrParent[sAPrefix + oAttrib.name.toLowerCase()] = this.parseText(oAttrib.value.trim());
+            }
+
+            if (bNesteAttr) {
+                if (bFreeze) { Object.freeze(oAttrParent); }
+                vResult[this.sAttrProp] = oAttrParent;
+                nLength -= nAttrLen - 1;
+            }
+
+        }
+
+        if (nVerb === 3 || (nVerb === 2 || nVerb === 1 && nLength > 0) && sCollectedTxt) {
+            vResult[this.sValProp] = vBuiltVal;
+        } else if (!bHighVerb && nLength === 0 && sCollectedTxt) {
+            vResult = vBuiltVal;
+        }
+
+        if (bFreeze && (bHighVerb || nLength > 0)) { Object.freeze(vResult); }
+
+        this.aCache.length = nLevelStart;
+
+        return vResult;
+    },
+    'loadObjTree' : function loadObjTree (oXMLDoc, oParentEl, oParentObj) {
+
+        var vValue, oChild;
+
+        if (oParentObj.constructor === String || oParentObj.constructor === Number || oParentObj.constructor === Boolean) {
+            oParentEl.appendChild(oXMLDoc.createTextNode(oParentObj.toString())); /* verbosity level is 0 or 1 */
+            if (oParentObj === oParentObj.valueOf()) { return; }
+        } else if (oParentObj.constructor === Date) {
+            oParentEl.appendChild(oXMLDoc.createTextNode(oParentObj.toGMTString()));
+        }
+
+        for (var sName in oParentObj) {
+            vValue = oParentObj[sName];
+            if (isFinite(sName) || vValue instanceof Function) { continue; } /* verbosity level is 0 */
+            if (sName === this.sValProp) {
+                if (vValue !== null && vValue !== true) { oParentEl.appendChild(oXMLDoc.createTextNode(vValue.constructor === Date ? vValue.toGMTString() : String(vValue))); }
+            } else if (sName === this.sAttrProp) { /* verbosity level is 3 */
+                for (var sAttrib in vValue) { oParentEl.setAttribute(sAttrib, vValue[sAttrib]); }
+            } else if (sName.charAt(0) === this.sAttrsPref) {
+                oParentEl.setAttribute(sName.slice(1), vValue);
+            } else if (vValue.constructor === Array) {
+                for (var nItem = 0; nItem < vValue.length; nItem++) {
+                    oChild = oXMLDoc.createElement(sName);
+                    this.loadObjTree(oXMLDoc, oChild, vValue[nItem]);
+                    oParentEl.appendChild(oChild);
+                }
+            } else {
+                oChild = oXMLDoc.createElement(sName);
+                if (vValue instanceof Object) {
+                    this.loadObjTree(oXMLDoc, oChild, vValue);
+                } else if (vValue !== null && vValue !== true) {
+                    oChild.appendChild(oXMLDoc.createTextNode(vValue.toString()));
+                }
+                oParentEl.appendChild(oChild);
+            }
+        }
+    },
+    'fromXML' : function (oXMLParent, nVerbosity /* optional */, bFreeze /* optional */, bNesteAttributes /* optional */) {
+        try {
+            var nVerbMask = arguments.length > 1 && typeof nVerbosity === "number" ? nVerbosity & 3 : /* put here the default verbosity level: */ 1;
+            return this.createObjTree(oXMLParent, nVerbMask, bFreeze || false, arguments.length > 3 ? bNesteAttributes : nVerbMask === 3);
+        } catch (e){
+            throw new System.exception.XMLException();
+        }
+    },
+    'toXML' : function (oObjTree, sNamespaceURI /* optional */, sQualifiedName /* optional */, oDocumentType /* optional */) {
+        try {
+            var oNewDoc = document.implementation.createDocument(sNamespaceURI || null, sQualifiedName || "", oDocumentType || null);
+            loadObjTree(oNewDoc, oNewDoc, oObjTree);
+            return oNewDoc;
+        } catch (e){
+            throw new System.exception.XMLException();
+        }
+    }
+})

@@ -90,7 +90,7 @@ Namespace('com.example',
     Class('Dog', {
       '$extends' : 'com.example.Animal',
       'constructor' : function(name, race, age) {
-          this.$super('canis'); // initialize super constructor first
+          this.$super('canis'); // initialize super class' constructor first
           this.name = name;
           this.race = race;
           this.age = age;

@@ -30,7 +30,7 @@ Over NodeJS it can be easyly downloaded and installed with:
 ```console
 npm install vitruvio --save
 ```
-or can be downloaded from: [latest realeased](https://github.com/yadirhb/vitruvio/dist/vitruvio-latest.min.js)
+or can be downloaded via Right click/Save as: [latest realeased](https://github.com/yadirhb/vitruvio/tree/master/dist)
 
 ### Step 2, include it in your code!
 Vitruvio exports the System namespace which is the main namespace of the framework and contains fundamental classes and base classes that define commonly-used value and reference data types, events and event handlers, interfaces, attributes, and processing exceptions. For this reason is highly recommended to name it on source code as System.

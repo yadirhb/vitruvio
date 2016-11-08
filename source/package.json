@@ -1,9 +1,15 @@
 {
-  "name": "system",
-  "version": "1.0.0",
+  "name": "vitruvio",
+  "version": "1.0.3",
+  "description": "Framework which extends JavaScript capabilities in order to allow developing OOP applications over an structural well designed architecture by defining: namespaces, classes, interfaces, enumerators, inheritance, exceptions and other resources.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yadirhb/vitruvio.git"
+  },
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-jshint": "^1.0.0",
     "grunt-contrib-nodeunit": "^1.0.0",
     "grunt-contrib-uglify": "^2.0.0",

@@ -1,6 +1,7 @@
 module.exports = function (grunt) {
     var name = "vitruvio";
     var buildPath = "build/";
+    var distPath = "../dist/vitruvio/";
 
     // Project configuration.
     grunt.initConfig({
@@ -18,25 +19,34 @@ module.exports = function (grunt) {
             main: {
                 src: [],
                 dest: buildPath + name + "-npm/index.js"
-            },
-            other: {
-                src: [],
-                dest: buildPath + '<%= pkg.name%>-<%= pkg.version %>-concat.js'
             }
         },
         min: {
             main: {
                 src: '<%= concat.main.dest%>',
-                dest: buildPath + '<%= pkg.name%>-<%= pkg.version %>-min.js',
+                dest: buildPath + '<%= pkg.name%>-<%= pkg.version %>.min.js'
             }
         },
-        uglify: {
-            options: {
-                banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+        copy: {
+            main: {
+                src : buildPath + name + "-npm/index.js",
+                dest : buildPath + '<%= pkg.name%>-<%= pkg.version %>.concat.js'
             },
-            build: {
-                src: '<%= concat.main.dest%>',
-                dest: buildPath + '<%= pkg.name%>-<%= pkg.version %>-ugly.js'
+            distConcat : {
+                src : buildPath + name + "-npm/index.js",
+                dest : distPath + '<%= pkg.version %>/<%= pkg.name%>.concat.js'
+            },
+            latestConcat : {
+                src : buildPath + name + "-npm/index.js",
+                dest : distPath + '<%= pkg.name%>-latest.concat.js'
+            },
+            distMin : {
+                src : buildPath + '<%= pkg.name%>-<%= pkg.version %>.min.js',
+                dest : distPath + '<%= pkg.version %>/<%= pkg.name%>.min.js'
+            },
+            latestMin : {
+                src : buildPath + '<%= pkg.name%>-<%= pkg.version %>.min.js',
+                dest : distPath + '<%= pkg.name%>-latest.min.js'
             }
         }
     });
@@ -64,8 +74,9 @@ module.exports = function (grunt) {
         concat.main.src.push("res/final-exposures.js");
         concat.main.src.push("res/footer.js");
 
-        concat.other.src = concat.main.src;
-        console.log(concat.main.src);
+        /*for (var dist in concat) {
+            if (concat.hasOwnProperty(dist) && dist != "main") concat[dist].src = concat.main.src;
+        }*/
 
         //add module subtasks to the concat task in initConfig
         grunt.config.set('concat', concat);
@@ -76,7 +87,9 @@ module.exports = function (grunt) {
     // Load the plugin that provides the "min" task.
     grunt.loadNpmTasks('grunt-yui-compressor');
     // Load the plugin that provides the "uglify" task.
-    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-uglify')
+    // Load the plugin that provides the "copy" task.
+    grunt.loadNpmTasks('grunt-contrib-copy');
     // Default task(s).
-    grunt.registerTask('default', ['prepareModules', 'concat', 'min']);
+    grunt.registerTask('default', ['prepareModules', 'concat', 'min', 'copy']);
 };

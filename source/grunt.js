@@ -1,7 +1,7 @@
 module.exports = function (grunt) {
     var name = "vitruvio";
     var buildPath = "build/";
-    var distPath = "../dist/vitruvio/";
+    var distPath = "../dist/";
 
     // Project configuration.
     grunt.initConfig({

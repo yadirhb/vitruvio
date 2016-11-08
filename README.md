@@ -65,7 +65,7 @@ var Enum = using('System.Enum');
 ...
 ```
 
-### Step 4, lets define!
+### Step 4, lets define some classes!
 ```javascript
 // on file src/com/example/Animal.js
 Namespace('com.example', 
@@ -120,4 +120,90 @@ console.log(boxer.getName()) // Snoopy
 console.log(boxer.getSpecie()) // canis - Boxer
 
 ```
+
+### Is and As operators
+One of the most advanced capabilities of Vitruvio framework is the ability to cast objects to a specific type and to check instances out by its type.
+
+Is operator example:
+Pure JavaScript:
+```javascript
+try {
+  ...
+} catch(e) {
+    if(e.type == "Error") {
+        // Do something
+    }
+    
+    // or 
+    
+    if(e instanceof Error) {
+        // Do something
+    }
+}
+```
+
+Vitruvio schema:
+```javascript
+try {
+  // Some code which throws an error.
+  throw new CustomException("My Custom message");
+} catch(e) {
+    // The is operator in most cases will do the same as the instanceof JavaScript operator.
+    if(e.is(CustomException)) {
+      // Do something
+    } else if(e.is(Exception)) { // Base System.Exception class
+      // Do something
+    } else { // Third party and basic JavaScript errors
+      // Do something
+    }
+}
+```
+As operator:
+Pure JavaScript:
+```javascript
+...
+```
+
+Vitruvio schema:
+```javascript
+// on file src/com/example/ifaces/Runnable.js
+
+Namespace('com.example.ifaces', 
+  Interface('Runnable', {
+    'run': function(task) {}
+  })
+)
+
+// on file src/com/example/tasks/DownloadTask.js
+Namespace('com.example.tasks', 
+  Class('DownloadTask', {  
+    '$implements' : 'com.example.ifaces.Runnable',
+    'taskList' : [],
+    'run': function(task) {
+        taskList.push(task);
+        // ...
+    },
+    'getTasks' : function() {
+        return this.taskList;
+    },
+    // several methods and properties
+  })
+)
+
+// on main.js file
+var Runnable = using('com.example.ifaces.Runnable');
+var DownloadTask = using('com.example.tasks.DownloadTask');
+
+var task = new DownloadTask();
+
+var runnable = task.as(Runnable); // the casted runnable instance will only contain the run method.
+
+
+```
+
+
+
+
+
+
 

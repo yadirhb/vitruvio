@@ -1,4 +1,4 @@
-# <img src="media/comparison.png"/>
+# <img src="https://raw.githubusercontent.com/yadirhb/vitruvio/master/media/comparison.png"/>
 # Vitruvio
 Is a framework which extends JavaScript capabilities in order to allow developing OOP applications over an structural well designed architecture by defining: namespaces, classes, interfaces, enumerators, inheritance, exceptions and other resources. Altogether with the solid class system proposed, it offers:
 <ul>

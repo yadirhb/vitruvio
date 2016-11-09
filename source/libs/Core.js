@@ -331,7 +331,7 @@ define(Namespace, Member, undefined, {
             // check if the current parent already has the namespace declared
             // if it isn't, then create it
 
-            if (node in container) {
+            if (node in container && container[node]) {
                 result['container'] = container = container[node];
                 result['name'] += first ? node : "." + node;
             } else break;

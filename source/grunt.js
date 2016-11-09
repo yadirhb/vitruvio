@@ -5,7 +5,7 @@ module.exports = function (grunt) {
 
     // Project configuration.
     grunt.initConfig({
-        pkg: grunt.file.readJSON(buildPath + name + '-npm/package.json'),
+        pkg: grunt.file.readJSON('package.json'),
         concat: {
             options: {
                 banner: '/**\n' +
@@ -29,24 +29,36 @@ module.exports = function (grunt) {
         },
         copy: {
             main: {
-                src : buildPath + name + "-npm/index.js",
-                dest : buildPath + '<%= pkg.name%>-<%= pkg.version %>.concat.js'
+                src: buildPath + name + "-npm/index.js",
+                dest: buildPath + '<%= pkg.name%>-<%= pkg.version %>.concat.js'
             },
-            distConcat : {
-                src : buildPath + name + "-npm/index.js",
-                dest : distPath + '<%= pkg.version %>/<%= pkg.name%>.concat.js'
+            package: {
+                src: "package.json",
+                dest: buildPath + name + "-npm/package.json"
             },
-            latestConcat : {
-                src : buildPath + name + "-npm/index.js",
-                dest : distPath + '<%= pkg.name%>-latest.concat.js'
+            readme : {
+                src: "../README.md",
+                dest: buildPath + name + "-npm/README.md"
             },
-            distMin : {
-                src : buildPath + '<%= pkg.name%>-<%= pkg.version %>.min.js',
-                dest : distPath + '<%= pkg.version %>/<%= pkg.name%>.min.js'
+            license : {
+                src: "../LICENSE",
+                dest: buildPath + name + "-npm/LICENSE"
             },
-            latestMin : {
-                src : buildPath + '<%= pkg.name%>-<%= pkg.version %>.min.js',
-                dest : distPath + '<%= pkg.name%>-latest.min.js'
+            distConcat: {
+                src: buildPath + name + "-npm/index.js",
+                dest: distPath + '<%= pkg.version %>/<%= pkg.name%>.concat.js'
+            },
+            latestConcat: {
+                src: buildPath + name + "-npm/index.js",
+                dest: distPath + '<%= pkg.name%>-latest.concat.js'
+            },
+            distMin: {
+                src: buildPath + '<%= pkg.name%>-<%= pkg.version %>.min.js',
+                dest: distPath + '<%= pkg.version %>/<%= pkg.name%>.min.js'
+            },
+            latestMin: {
+                src: buildPath + '<%= pkg.name%>-<%= pkg.version %>.min.js',
+                dest: distPath + '<%= pkg.name%>-latest.min.js'
             }
         }
     });
@@ -75,8 +87,8 @@ module.exports = function (grunt) {
         concat.main.src.push("res/footer.js");
 
         /*for (var dist in concat) {
-            if (concat.hasOwnProperty(dist) && dist != "main") concat[dist].src = concat.main.src;
-        }*/
+         if (concat.hasOwnProperty(dist) && dist != "main") concat[dist].src = concat.main.src;
+         }*/
 
         //add module subtasks to the concat task in initConfig
         grunt.config.set('concat', concat);

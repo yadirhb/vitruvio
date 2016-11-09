@@ -1,0 +1,41 @@
+/**
+ * Created by yadirhb on 9/3/2016.
+ */
+
+try { // On nodejs
+    var System = System || require("vitruvio");
+} catch(e){}
+ 
+var using = System.using,
+    Namespace = using('System.Namespace'),
+    Class = using('System.Class');
+
+Namespace('com.example',
+	/**
+	 * Dog class
+	 */
+    module.exports = Class('Dog', {
+        '$extends': 'com.example.Animal',
+		'constructor' : function(name, race, age) {
+			this.$super('canis'); // initialize super class' constructor first
+			this.name = name;
+			this.race = race;
+			this.age = age;
+		},
+		'getName' : function() {
+			return this.name;
+		},
+		'getAge' : function() {
+			return this.age;
+		},
+		'getRace' : function(){
+			return this.race;
+		},
+		/**
+		  * @Override getSpecie
+		  */
+		'getSpecie' : function() {
+			return this.$super.getSpecie() + " - " + this.race;
+		}
+    })
+)

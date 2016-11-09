@@ -1,7 +1,27 @@
 {
   "name": "vitruvio",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Framework which extends JavaScript capabilities in order to allow developing OOP applications over an structural well designed architecture by defining: namespaces, classes, interfaces, enumerators, inheritance, exceptions and other resources.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "readmeFileName": "README.md",
+  "keywords": [
+    "Class",
+    "Namespace",
+    "System",
+    "Event manager",
+    "XML parser",
+    "JXON",
+    "Inheritance",
+    "Exception",
+    "Framework"
+  ],
+  "authors": [
+    "Yadir Hernandez <yadirhb@gmail.com>"
+  ],
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/yadirhb/vitruvio.git"

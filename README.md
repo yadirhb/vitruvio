@@ -112,13 +112,18 @@ Namespace('com.example',
 
 // on file src/main.js
 
-var Dog = using('com.example.Dog'); // Reference the Dog class.
+// Load and get the Dog class reference asynchronously
+using('com.example.Dog', function(Dog){
+	var boxer = new Dog("Snoopy", "Boxer", 5);
 
-var boxer = new Dog("Snoopy", "Boxer", 5);
+	console.log(boxer.getName()) // Snoopy
+	console.log(boxer.getSpecie()) // canis - Boxer
+});
 
-console.log(boxer.getName()) // Snoopy
-console.log(boxer.getSpecie()) // canis - Boxer
-
+```
+Once a class has been loaded, you can get its reference:
+```javascript
+var MyClass = using('com.example.MyClass');
 ```
 
 ### Is and As operators

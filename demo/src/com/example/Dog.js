@@ -1,15 +1,6 @@
 /**
  * Created by yadirhb on 9/3/2016.
  */
-
-try { // On nodejs
-    var System = System || require("vitruvio");
-} catch(e){}
- 
-var using = System.using,
-    Namespace = using('System.Namespace'),
-    Class = using('System.Class');
-
 Namespace('com.example',
 	/**
 	 * Dog class

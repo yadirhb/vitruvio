@@ -2,17 +2,17 @@
  * Created by yadirhb on 8/29/2016.
  */
 try {
-    var System = System || require("vitruvio");
+System = System || require("vitruvio");
 } catch (e) {}
 
 // System's globals
-var using = System.using;
-var Namespace = using('System.Namespace');
-var Static = using('System.Static');
-var Class = using('System.Class');
-var Interface = using('System.Interface');
-var Exception = using('System.Exception');
-var Enum = using('System.Enum');
+using = System.using;
+Namespace = using('System.Namespace');
+Static = using('System.Static');
+Class = using('System.Class');
+Interface = using('System.Interface');
+Exception = using('System.Exception');
+Enum = using('System.Enum');
 
 // Main operations
 

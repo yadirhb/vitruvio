@@ -3,7 +3,7 @@
  * @version 1.0.4
  * @description Framework which extends JavaScript capabilities in order to allow developing OOP applications over an structural well designed architecture by defining: namespaces, classes, interfaces, enumerators, inheritance, exceptions and other resources.
  * @author Yadir Hernandez <yadirhb@gmail.com>
- * @released 2016-11-09
+ * @released 2016-11-11
  */
 (function () {
     var $global = this, stime = new Date().getMilliseconds();
@@ -946,7 +946,7 @@ var $root = "System", System = $global[$root] || {'$global': $global}, $original
 var validIdientifierRegex = /^@?[a-z_A-Z]\w+(?:\.@?[a-z_A-Z]\w+)*$/;
 
 /**
- * Parent class for inheritance into the SystemJS.
+ * Parent class for inheritance into the System.
  * @returns {Type}
  * @constructor
  */

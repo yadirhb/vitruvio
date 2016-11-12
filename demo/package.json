@@ -1,0 +1,20 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "This is a demo application which runs over nodejs and web browsers the same source code.",
+  "main": "./src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Vitruvio",
+    "demo",
+    "dynamic",
+    "loader"
+  ],
+  "author": "Yadir Hernandez <yadirhb@gmail.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "vitruvio": "^1.0.4"
+  }
+}

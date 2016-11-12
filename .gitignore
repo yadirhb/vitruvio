@@ -1,3 +1,7 @@
 /source/node_modules
 /source/.idea
 /source/build
+/source/dev
+/source/demo
+/demo/.idea
+/demo/node_modules

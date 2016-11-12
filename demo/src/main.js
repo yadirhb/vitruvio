@@ -2,8 +2,9 @@
  * Created by yadirhb on 8/29/2016.
  */
 try {
-    System = System || require("vitruvio");
-} catch (e) {}
+    System = require("vitruvio");
+} catch (e) {
+}
 
 // System's globals
 using = System.using;
@@ -17,13 +18,13 @@ Enum = using('System.Enum');
 // Main operations
 
 // Load and get the Dog class reference asynchronously
-using('com.example.Dog', function(Dog){
-	var boxer = new Dog("Snoopy", "Boxer", 5);
+using('com.example.Dog', function (Dog) {
+    var boxer = new Dog("Snoopy", "Boxer", 5);
 
-	console.log(boxer.getName()) // Snoopy
-	console.log(boxer.getSpecie()) // canis - Boxer
+    console.log(boxer.getName()) // Snoopy
+    console.log(boxer.getSpecie()) // canis - Boxer
 });
 
-using('System.utils.Example', function(Example){
-	alert(new Example("The amazing thing!!!").getData())
+using('System.utils.Example', function (Example) {
+    console.log(new Example("The amazing thing!!!").getData())
 })

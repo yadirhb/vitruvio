@@ -1,7 +1,7 @@
 var validIdientifierRegex = /^@?[a-z_A-Z]\w+(?:\.@?[a-z_A-Z]\w+)*$/;
 
 /**
- * Parent class for inheritance into the SystemJS.
+ * Parent class for inheritance into the System.
  * @returns {Type}
  * @constructor
  */

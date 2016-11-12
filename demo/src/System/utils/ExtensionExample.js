@@ -3,9 +3,9 @@
  */
 Namespace('System.utils',
     /**
-     * Class Example
+     * Class ExtensionExample
      */
-    module.exports = Class('Example', { // module.exports to publish the class over NodeJS
+    module.exports = Class('ExtensionExample', { // module.exports to publish the class over NodeJS
         'constructor': function (data) {
             this.data = data;
         },

@@ -25,6 +25,6 @@ using('com.example.Dog', function (Dog) {
     console.log(boxer.getSpecie()) // canis - Boxer
 });
 
-using('System.utils.Example', function (Example) {
-    console.log(new Example("The amazing thing!!!").getData())
+using('System.utils.ExtensionExample', function (ExtensionExample) {
+    console.log(new ExtensionExample("The amazing thing!!!").getData())
 })

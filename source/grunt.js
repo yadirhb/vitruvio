@@ -6,6 +6,9 @@ module.exports = function (grunt) {
     // Project configuration.
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
+        clean : {
+            build : [buildPath]
+        },
         concat: {
             options: {
                 banner: '/**\n' +
@@ -36,11 +39,11 @@ module.exports = function (grunt) {
                 src: "package.json",
                 dest: buildPath + name + "-npm/package.json"
             },
-            readme : {
+            readme: {
                 src: "../README.md",
                 dest: buildPath + name + "-npm/README.md"
             },
-            license : {
+            license: {
                 src: "../LICENSE",
                 dest: buildPath + name + "-npm/LICENSE"
             },
@@ -102,6 +105,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify')
     // Load the plugin that provides the "copy" task.
     grunt.loadNpmTasks('grunt-contrib-copy');
+    // Load the plugin that provides the "clean" task.
+    grunt.loadNpmTasks('grunt-contrib-clean');
     // Default task(s).
-    grunt.registerTask('default', ['prepareModules', 'concat', 'min', 'copy']);
+    grunt.registerTask('default', ['prepareModules', 'clean', 'concat', 'min', 'copy']);
 };

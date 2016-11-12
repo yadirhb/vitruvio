@@ -373,10 +373,10 @@ define(Loader, Function, undefined, {
 
             var requests = [], unresolved = [], caller = arguments.callee.caller, async = false;
 
-            dependency.each(function (dep) {
+            dependency.each(function (dep, i) {
                 if (dep in map) {
                     if (requests.indexOf(map[dep]) == -1) {
-                        requests.push(map[dep]);
+                        requests[i] = map[dep];
                     }
                 } else if (unresolved.indexOf(dep) == -1) {
                     unresolved.push(dep);
@@ -390,13 +390,14 @@ define(Loader, Function, undefined, {
                         if (isString(dependency)) {
                             if (requests.indexOf(map[dependency]) == -1) requests.push(map[dependency])
                         } else if (isArray(dependency)) {
-                            dependency.each(function (dep) {
-                                if (requests.indexOf(map[dep]) == -1) requests.push(map[dep]);
+                            dependency.each(function (dep, i) {
+                                if (requests.indexOf(map[dep]) == -1) requests[i] = map[dep];
                             })
                         }
                         try {
                             return callback.apply(caller, requests);
                         } catch (e) {
+                            throw new System.exception.RuntimeException("Execution failed during callback " + (e ? "because of: <" + e.message + ">" : ""));
                         }
                     });
                 }
@@ -415,7 +416,7 @@ define(Loader, Function, undefined, {
                                 // var index = unresolved.indexOf(name);
                                 if (classpath in map) {
                                     // unresolved.remove(index);
-                                    if (requests.indexOf(map[classpath]) == -1) requests.push(map[classpath]);
+                                    if (requests.indexOf(map[classpath]) == -1) requests[dependency.indexOf(classpath)] = map[classpath];
                                 } else if (module && module.is(DependencyRequest) && module.loaded) {
                                     Loader.notify(name);
                                 }
@@ -907,7 +908,7 @@ System.config = function configure(config) {
             if (cfg.sourcesSet) {
                 if (cfg.sourcesSet.is(Array)) {
                     System.Router.sourcesSet = cfg.sourcesSet;
-                } else if (cfg.is(String)) {
+                } else if (cfg.sourcesSet.is(String)) {
                     System.Router.sourcesSet.push(cfg.sourcesSet);
                 }
             }

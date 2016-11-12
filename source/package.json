@@ -1,6 +1,6 @@
 {
   "name": "vitruvio",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Framework which extends JavaScript capabilities in order to allow developing OOP applications over an structural well designed architecture by defining: namespaces, classes, interfaces, enumerators, inheritance, exceptions and other resources.",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,7 @@
   "keywords": [
     "Class",
     "Namespace",
+    "Dependency loader",
     "System",
     "Event manager",
     "XML parser",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "grunt": "^1.0.1",
+    "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-jshint": "^1.0.0",

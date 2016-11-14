@@ -21,7 +21,7 @@ Vitruvio runs server side on Node.JS and client side suports the following brows
 <li><img src="https://upload.wikimedia.org/wikipedia/commons/d/d4/Opera_browser_logo_2013.png" width="24px"/> Opera</li>
 <li><img src="http://vignette3.wikia.nocookie.net/logopedia/images/6/61/Apple_Safari.png/revision/latest?cb=20150324134451" width="24px"/>
 Safari</li>
-<li><img src="https://upload.wikimedia.org/wikipedia/commons/e/ee/Internet_Explorer_logo.png" width="24px"/> Internet Explorer ver. 9+</li>
+<li><img src="https://upload.wikimedia.org/wikipedia/commons/e/ee/Internet_Explorer_logo.png" width="24px"/> Internet Explorer ver. 5+</li>
 </ul>
 
 ## How to use

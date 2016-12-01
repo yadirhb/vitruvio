@@ -5,11 +5,11 @@ if (Environment.isBrowser()) {
     Static.Class('dom.Browser', {
         'scrollTop': function () {
             var doc = document.documentElement;
-            return (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+            return ($global.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
         },
         'scrollLeft': function () {
             var doc = document.documentElement;
-            return (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+            return ($global.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
         }
     })
 }

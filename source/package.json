@@ -1,6 +1,6 @@
 {
   "name": "vitruvio",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Framework which extends JavaScript capabilities in order to allow developing OOP applications over an structural well designed architecture by defining: namespaces, classes, interfaces, enumerators, inheritance, exceptions and other resources.",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,7 @@
   "keywords": [
     "Class",
     "Namespace",
+    "Module",
     "Dependency loader",
     "System",
     "Event manager",

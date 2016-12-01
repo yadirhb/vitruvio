@@ -2,7 +2,6 @@
  * Created by yadirhb on 9/24/2016.
  */
 if (Environment.isNode()) {
-    var path = require('path');
     Static.Class('runtime.NodeLoader', {
         'load': function load(dependency, callback) {
             var requests;
@@ -13,19 +12,32 @@ if (Environment.isNode()) {
                         requests.push(load(dep));
                     });
                 } else {
-                    var sourcesSet = System.Router.getSourcesSet();//["/src/"];
-                    var baseDir = System.Router.getBaseDir();
-                    for (var i = 0; i < sourcesSet.length; i++) {
-                        try {
-                            var dep = dependency;
-                            if (validIdientifierRegex.test(dep)) {
-                                dep = path.normalize(baseDir + "/" + sourcesSet[i] + dep.replaceAll(".", "/"));
+                    if (dependency.is(String)) {
+                        var path = require('path');
+                        var sourcesSet = System.Router.getSourcesSet();
+                        var baseDir = System.Router.getBaseDir();
+
+                        for (var i = 0; i < sourcesSet.length; i++) {
+                            try {
+                                var dep = dependency;
+                                if (validIdientifierRegex.test(dep)) {
+                                    dep = path.normalize(baseDir + "/" + sourcesSet[i] + dep.replaceAll(".", "/"));
+                                }
+
+                                requests = new DependencyRequest(dependency, require(dep));
+                                requests.loaded = true;
+                                break;
+                            } catch (e) {
+                                requests = new DependencyRequest(dependency, e);
                             }
-                            requests = new DependencyRequest(dependency, require(dep));
+                        }
+                    } else if (dependency.is(Object)) {
+                        try {
+                            requests = new DependencyRequest(dependency.member, require(dependency.pkg));
+                            requests.combined = true;
                             requests.loaded = true;
-                            break;
                         } catch (e) {
-                            requests = new DependencyRequest(dependency, e);
+                            throw new System.exception.RuntimeException(e.message);
                         }
                     }
                 }

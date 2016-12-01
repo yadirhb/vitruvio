@@ -1,4 +1,6 @@
-var validIdientifierRegex = /^@?[a-z_A-Z]\w+(?:\.@?[a-z_A-Z]\w+)*$/;
+var packageRegex = "[a-z_A-Z]\\w+(?:\\.@?[a-z_A-Z]\\w+)*";
+var validIdientifierRegex = new RegExp("^@?" + packageRegex + "$");
+var urlExp = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/;
 
 /**
  * Parent class for inheritance into the System.
@@ -69,7 +71,7 @@ function DynamicContainer(prev, current) {
  * @constructor
  */
 function Member(/*[Type]*/) {
-    if (this.is(Member)) {
+    if (is(this, Member)) {
         var context = this, name = arguments[0], container = arguments[1], $type = arguments[2];
         Type.call(this, $type || Member);
 
@@ -94,7 +96,7 @@ function Member(/*[Type]*/) {
          */
         this.getParent = function () {
             var cont = container;
-            if (cont && !cont.is(Member)) {
+            if (cont && !is(cont, Member)) {
                 cont = new OutsiderContainer(cont);
             }
             return cont;
@@ -107,9 +109,9 @@ function Member(/*[Type]*/) {
         this.getContainer = function () {
             var cont = this.getParent();
             if (cont) {
-                if (cont.is(DynamicContainer)) {
+                if (is(cont, DynamicContainer)) {
                     cont = cont.getCurrent();
-                } else if (cont.is(OutsiderContainer)) {
+                } else if (is(cont, OutsiderContainer)) {
                     cont = cont.getContext();
                 }
             }
@@ -124,7 +126,7 @@ function Member(/*[Type]*/) {
             var path = "";
             var cont = this.getContainer();
 
-            while (cont && cont.is(Member) && !cont.is(OutsiderContainer)) {
+            while (cont && is(cont, Member) && !is(cont, OutsiderContainer)) {
                 path = cont.getName() + "." + path;
                 cont = cont.getContainer();
             }
@@ -169,8 +171,9 @@ define(Member, Type, {
     }
 }, {
     'BuilderTemp': function BuilderTemp() {
-        if (this.is(BuilderTemp)) {
-            this.onBuild = new Function;
+        if (this.is(Member.BuilderTemp)) {
+            this.onBuild = function () {
+            };
         }
     },
     'updateParent': function (member, current) {
@@ -202,6 +205,7 @@ function OutsiderContainer(/*[Member]*/) {
         }
     }
 }
+
 define(OutsiderContainer, Member);
 
 /**
@@ -232,13 +236,14 @@ function Namespace(/*[Member]*/) {
 
             var container = config.$container || (CONFIG.GLOBAL || $global);
 
-            if (this.is(Namespace)) { // Check if is instantiation
+            if (is(this, Namespace)) { // Check if is instantiation
                 if (arguments.length <= 2) {
                     container = arguments[1] || container;
 
                     var wrapper = Namespace.getLastNode(container, config.$name),
                         name = config.$name.replace(wrapper.name, "");
-                    name = name[0] == "." ? name.substring(1, name.length) : name; // com.example
+                    var extract = new RegExp("^.*?(" + packageRegex + ")", "gm").exec(name);
+                    name = extract ? extract[1] : name;
 
                     container = wrapper.container;
 
@@ -355,11 +360,11 @@ function DependencyRequest(name, module) {
         this.loaded = false;
 
         this.isSuccess = function () {
-            return module && !module.is(Error);
+            return module && !is(module, Error);
         }
     }
 }
-
+var extractorRegex = new RegExp("^:([a-z][a-z_-]*)+:{0,1}(" + packageRegex + ")*$", "gm");
 define(Loader, Function, undefined, {
     'isAutoLoadDisabled': true,
     'loaders': {
@@ -374,7 +379,25 @@ define(Loader, Function, undefined, {
             var requests = [], unresolved = [], caller = arguments.callee.caller, async = false;
 
             dependency.each(function (dep, i) {
-                if (dep in map) {
+                var pkg, extract = extractorRegex.exec(dep);
+
+                if (extract) {
+                    pkg = extract[1];
+                    if (extract[2]) {
+                        dependency[i] = dep = extract[2];
+                    } else {
+                        dependency.remove(i);
+                    }
+                } else if (!urlExp.test(dep) && !validIdientifierRegex.test(dep)) {
+                    throw new System.exception.RuntimeException("Invalid dependency provided to load, was '" + dep + "'");
+                }
+
+                if (pkg) {
+                    unresolved.push({
+                        'member': dep,
+                        'pkg': pkg
+                    });
+                } else if (dep in map) {
                     if (requests.indexOf(map[dep]) == -1) {
                         requests[i] = map[dep];
                     }
@@ -410,16 +433,24 @@ define(Loader, Function, undefined, {
                             });
                         } else {
                             if (mods.isSuccess()) {
-                                var name = mods.name, classpath = name;//.replaceAll("/", ".");
-                                var module = mods.module;
+                                var classpath = mods.name, module = mods.module, member;
 
+                                if (mods.loaded) {
+                                    // if (mods.combined) {
+                                    //     return Loader.using(classpath, callback);
+                                    // }
+                                    // else {
+                                    member = module;
+                                    Loader.notify(classpath);
+                                    // }
+                                }
                                 // var index = unresolved.indexOf(name);
                                 if (classpath in map) {
                                     // unresolved.remove(index);
-                                    if (requests.indexOf(map[classpath]) == -1) requests[dependency.indexOf(classpath)] = map[classpath];
-                                } else if (module && module.is(DependencyRequest) && module.loaded) {
-                                    Loader.notify(name);
+                                    member = map[classpath];
                                 }
+
+                                if (requests.indexOf(map[classpath]) == -1) requests[dependency.indexOf(classpath)] = member;
                             }
                         }
                     }
@@ -474,7 +505,7 @@ define(Loader, Function, undefined, {
      */
     'DependencyObserver': function DependencyObserver(dependency, callback) {
         if (dependency && isFunction(callback)) {
-            if (this.is(DependencyObserver)) {
+            if (is(this, Loader.DependencyObserver)) {
                 var context = this, deps = [], loadedDeps = [];
                 /**
                  *
@@ -491,24 +522,25 @@ define(Loader, Function, undefined, {
                     }
                 }
 
-                if (isString(dependency)) {
-                    if (!map[dependency]) {
-                        deps.push(dependency);
-                        return Loader.observers.add(dependency, this);
+                function fillDependency(dep) {
+                    if (!map[dep]) {
+                        deps.push(dep);
                     }
+                    return Loader.observers.add(dep, context);
+                }
+
+                if (isString(dependency)) {
+                    fillDependency(dependency);
                 } else if (isArray(dependency)) {
                     each(dependency, function (dep) {
-                        if (!map[dep]) {
-                            deps.push(dep);
-                            Loader.observers.add(dep, context);
-                        }
+                        fillDependency(dep);
                     });
 
                     return this;
                 }
             }
         }
-        throw new System.exception.InvalidArgumentsException("Invalid arguments supplied, expected (String/String[], Function)");
+        // throw new System.exception.InvalidArgumentsException("Invalid arguments supplied, expected (String/String[], Function)");
     },
     /**
      *

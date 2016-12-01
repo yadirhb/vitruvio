@@ -1,20 +1,21 @@
 /**
  * Manage events between components.
+ * This class wraps and handles compatibility between browsers and event management.
  */
 Static.Class('EventManager', {
     /**
-     *
-     * @param target
-     * @param eventName
-     * @param listener
-     * @param useCapture
+     * Adds a listener to the specified target.
+     * @param target {Object} The target which will be observed.
+     * @param eventName {String} The event name.
+     * @param listener {Function} The listener instance.
+     * @param useCapture {Boolean} True to use capture or False otherwise.
      * @returns Target object for chaining.
      */
     'addEventListener': function (target, eventName, listener, useCapture) {
-        if (target instanceof System.EventEmitter) {
+        var ver = System.utils.UserAgent.IE.getVersion();
+        if (is(target, System.EventEmitter)) {
             target.on(eventName, listener, useCapture);
-        } else if (target instanceof Element) {
-            var ver = System.utils.UserAgent.IE.getVersion();
+        } else if ((ver != -1 && ver <= 8) || is(target, Element)) {
             if (ver != -1 && ver < 11) {
                 target.attachEvent("on" + eventName, listener, useCapture);
             } else target.addEventListener(eventName, listener, useCapture);
@@ -22,17 +23,17 @@ Static.Class('EventManager', {
         return target;
     },
     /**
-     *
-     * @param target
-     * @param eventName
-     * @param listener
+     * Removes a listener from the specified target instance.
+     * @param target {Object} The target which contains the listener.
+     * @param eventName {String} The event name.
+     * @param listener {Function} The listener instance.
      * @returns Target object for chaining.
      */
     'removeEventListener': function (target, eventName, listener) {
-        if (target instanceof System.EventEmitter) {
+        var ver = System.utils.UserAgent.IE.getVersion();
+        if (is(target, System.EventEmitter)) {
             target.off(eventName, listener);
-        } else if (target instanceof Element) {
-            var ver = System.utils.UserAgent.IE.getVersion();
+        } else if ((ver != -1 && ver <= 8) || is(target, Element)) {
             if (ver != -1 && ver < 11) {
                 target.detachEvent("on" + eventName, listener);
             } else target.removeEventListener(eventName, listener);

@@ -241,7 +241,11 @@ function isEmpty(obj) {
  * @returns {boolean}
  */
 function is(obj, type) {
-    return obj instanceof type;
+    try {
+        return obj.is(type);
+    } catch (e) {
+        return obj instanceof type;
+    }
 }
 
 /**

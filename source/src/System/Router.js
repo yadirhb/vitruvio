@@ -10,7 +10,7 @@ Static.Class('Router', {
     'getBaseDir': function () {
         if (!System.Router.baseDir) {
             if (Environment.isNode()) {
-                return path_module.normalize(path_module.resolve(__dirname + "../../../"));
+                return path_module.normalize(path_module.resolve(__dirname + "/../../../"));
             } else if (Environment.isBrowser()) {
                 return "./";
             }

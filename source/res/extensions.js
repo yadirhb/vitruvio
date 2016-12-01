@@ -22,7 +22,7 @@ if (!Object.prototype.as) {
     Object.prototype.as = function (type) {
         if (type) {
             if (isFunction(type) && this.is(type)) {
-                var args = Array.prototype.concat.apply([null], arguments[1] || this.constructor.arguments);
+                var args = Array.prototype.concat([null], arguments[1] || this.constructor.arguments);
                 var $type = new (Function.prototype.bind.apply(type, args));
                 var context = this, proto = Object.getPrototypeOf(type.prototype);
                 if (type.is(Interface)) {

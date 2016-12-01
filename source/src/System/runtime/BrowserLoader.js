@@ -23,9 +23,9 @@ if (Environment.isBrowser()) {
                     }
 
                     dependency.each(function (dep) {
-                        requests.push(load(dep, onLoad, async));
+                        requests.push(System.runtime.BrowserLoader.load(dep, onLoad, async));
                     });
-                } else {
+                } else if (dependency.is(String)) {
                     var script = document.createElement("script"), container = document.getElementsByTagName("head")[0];
 
                     script.setAttribute("type", "text/javascript");

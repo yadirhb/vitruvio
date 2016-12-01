@@ -63,10 +63,16 @@ module.exports = function (grunt) {
                 src: buildPath + '<%= pkg.name%>-<%= pkg.version %>.min.js',
                 dest: distPath + '<%= pkg.name%>-latest.min.js'
             }
+            ,module : {
+                expand: true,
+                cwd: buildPath + name + "-npm/",
+                src: '**',
+                dest: 'node_modules/' + name
+            }
         }
     });
 
-    grunt.registerTask("prepareModules", "Finds and prepares modules for concatenation.", function () {
+    grunt.registerTask("prepareModules", "Finds and prepares packages for concatenation.", function () {
         var srcPaths = ["src"];
         // get the current concat object from initConfig
         var concat = grunt.config.get('concat') || {};

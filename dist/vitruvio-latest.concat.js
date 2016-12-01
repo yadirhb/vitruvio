@@ -1,9 +1,9 @@
 /**
  * @module vitruvio
- * @version 1.0.5
+ * @version 1.0.6
  * @description Framework which extends JavaScript capabilities in order to allow developing OOP applications over an structural well designed architecture by defining: namespaces, classes, interfaces, enumerators, inheritance, exceptions and other resources.
  * @author Yadir Hernandez <yadirhb@gmail.com>
- * @released 2016-11-11
+ * @released 2016-11-30
  */
 (function () {
     var $global = this, stime = new Date().getMilliseconds();
@@ -226,7 +226,7 @@ if (!Object.prototype.as) {
     Object.prototype.as = function (type) {
         if (type) {
             if (isFunction(type) && this.is(type)) {
-                var args = Array.prototype.concat.apply([null], arguments[1] || this.constructor.arguments);
+                var args = Array.prototype.concat([null], arguments[1] || this.constructor.arguments);
                 var $type = new (Function.prototype.bind.apply(type, args));
                 var context = this, proto = Object.getPrototypeOf(type.prototype);
                 if (type.is(Interface)) {
@@ -492,7 +492,11 @@ function isEmpty(obj) {
  * @returns {boolean}
  */
 function is(obj, type) {
-    return obj instanceof type;
+    try {
+        return obj.is(type);
+    } catch (e) {
+        return obj instanceof type;
+    }
 }
 
 /**
@@ -943,7 +947,9 @@ function define(type, baseClass, members, statics) {
  *  Global namespace definition
  */
 var $root = "System", System = $global[$root] || {'$global': $global}, $original = $global[$root];
-var validIdientifierRegex = /^@?[a-z_A-Z]\w+(?:\.@?[a-z_A-Z]\w+)*$/;
+var packageRegex = "[a-z_A-Z]\\w+(?:\\.@?[a-z_A-Z]\\w+)*";
+var validIdientifierRegex = new RegExp("^@?" + packageRegex + "$");
+var urlExp = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/;
 
 /**
  * Parent class for inheritance into the System.
@@ -1014,7 +1020,7 @@ function DynamicContainer(prev, current) {
  * @constructor
  */
 function Member(/*[Type]*/) {
-    if (this.is(Member)) {
+    if (is(this, Member)) {
         var context = this, name = arguments[0], container = arguments[1], $type = arguments[2];
         Type.call(this, $type || Member);
 
@@ -1039,7 +1045,7 @@ function Member(/*[Type]*/) {
          */
         this.getParent = function () {
             var cont = container;
-            if (cont && !cont.is(Member)) {
+            if (cont && !is(cont, Member)) {
                 cont = new OutsiderContainer(cont);
             }
             return cont;
@@ -1052,9 +1058,9 @@ function Member(/*[Type]*/) {
         this.getContainer = function () {
             var cont = this.getParent();
             if (cont) {
-                if (cont.is(DynamicContainer)) {
+                if (is(cont, DynamicContainer)) {
                     cont = cont.getCurrent();
-                } else if (cont.is(OutsiderContainer)) {
+                } else if (is(cont, OutsiderContainer)) {
                     cont = cont.getContext();
                 }
             }
@@ -1069,7 +1075,7 @@ function Member(/*[Type]*/) {
             var path = "";
             var cont = this.getContainer();
 
-            while (cont && cont.is(Member) && !cont.is(OutsiderContainer)) {
+            while (cont && is(cont, Member) && !is(cont, OutsiderContainer)) {
                 path = cont.getName() + "." + path;
                 cont = cont.getContainer();
             }
@@ -1114,8 +1120,9 @@ define(Member, Type, {
     }
 }, {
     'BuilderTemp': function BuilderTemp() {
-        if (this.is(BuilderTemp)) {
-            this.onBuild = new Function;
+        if (this.is(Member.BuilderTemp)) {
+            this.onBuild = function () {
+            };
         }
     },
     'updateParent': function (member, current) {
@@ -1147,6 +1154,7 @@ function OutsiderContainer(/*[Member]*/) {
         }
     }
 }
+
 define(OutsiderContainer, Member);
 
 /**
@@ -1177,13 +1185,14 @@ function Namespace(/*[Member]*/) {
 
             var container = config.$container || (CONFIG.GLOBAL || $global);
 
-            if (this.is(Namespace)) { // Check if is instantiation
+            if (is(this, Namespace)) { // Check if is instantiation
                 if (arguments.length <= 2) {
                     container = arguments[1] || container;
 
                     var wrapper = Namespace.getLastNode(container, config.$name),
                         name = config.$name.replace(wrapper.name, "");
-                    name = name[0] == "." ? name.substring(1, name.length) : name; // com.example
+                    var extract = new RegExp("^.*?(" + packageRegex + ")", "gm").exec(name);
+                    name = extract ? extract[1] : name;
 
                     container = wrapper.container;
 
@@ -1300,11 +1309,11 @@ function DependencyRequest(name, module) {
         this.loaded = false;
 
         this.isSuccess = function () {
-            return module && !module.is(Error);
+            return module && !is(module, Error);
         }
     }
 }
-
+var extractorRegex = new RegExp("^:([a-z][a-z_-]*)+:{0,1}(" + packageRegex + ")*$", "gm");
 define(Loader, Function, undefined, {
     'isAutoLoadDisabled': true,
     'loaders': {
@@ -1319,7 +1328,25 @@ define(Loader, Function, undefined, {
             var requests = [], unresolved = [], caller = arguments.callee.caller, async = false;
 
             dependency.each(function (dep, i) {
-                if (dep in map) {
+                var pkg, extract = extractorRegex.exec(dep);
+
+                if (extract) {
+                    pkg = extract[1];
+                    if (extract[2]) {
+                        dependency[i] = dep = extract[2];
+                    } else {
+                        dependency.remove(i);
+                    }
+                } else if (!urlExp.test(dep) && !validIdientifierRegex.test(dep)) {
+                    throw new System.exception.RuntimeException("Invalid dependency provided to load, was '" + dep + "'");
+                }
+
+                if (pkg) {
+                    unresolved.push({
+                        'member': dep,
+                        'pkg': pkg
+                    });
+                } else if (dep in map) {
                     if (requests.indexOf(map[dep]) == -1) {
                         requests[i] = map[dep];
                     }
@@ -1355,16 +1382,24 @@ define(Loader, Function, undefined, {
                             });
                         } else {
                             if (mods.isSuccess()) {
-                                var name = mods.name, classpath = name;//.replaceAll("/", ".");
-                                var module = mods.module;
+                                var classpath = mods.name, module = mods.module, member;
 
+                                if (mods.loaded) {
+                                    // if (mods.combined) {
+                                    //     return Loader.using(classpath, callback);
+                                    // }
+                                    // else {
+                                    member = module;
+                                    Loader.notify(classpath);
+                                    // }
+                                }
                                 // var index = unresolved.indexOf(name);
                                 if (classpath in map) {
                                     // unresolved.remove(index);
-                                    if (requests.indexOf(map[classpath]) == -1) requests[dependency.indexOf(classpath)] = map[classpath];
-                                } else if (module && module.is(DependencyRequest) && module.loaded) {
-                                    Loader.notify(name);
+                                    member = map[classpath];
                                 }
+
+                                if (requests.indexOf(map[classpath]) == -1) requests[dependency.indexOf(classpath)] = member;
                             }
                         }
                     }
@@ -1419,7 +1454,7 @@ define(Loader, Function, undefined, {
      */
     'DependencyObserver': function DependencyObserver(dependency, callback) {
         if (dependency && isFunction(callback)) {
-            if (this.is(DependencyObserver)) {
+            if (is(this, Loader.DependencyObserver)) {
                 var context = this, deps = [], loadedDeps = [];
                 /**
                  *
@@ -1436,24 +1471,25 @@ define(Loader, Function, undefined, {
                     }
                 }
 
-                if (isString(dependency)) {
-                    if (!map[dependency]) {
-                        deps.push(dependency);
-                        return Loader.observers.add(dependency, this);
+                function fillDependency(dep) {
+                    if (!map[dep]) {
+                        deps.push(dep);
                     }
+                    return Loader.observers.add(dep, context);
+                }
+
+                if (isString(dependency)) {
+                    fillDependency(dependency);
                 } else if (isArray(dependency)) {
                     each(dependency, function (dep) {
-                        if (!map[dep]) {
-                            deps.push(dep);
-                            Loader.observers.add(dep, context);
-                        }
+                        fillDependency(dep);
                     });
 
                     return this;
                 }
             }
         }
-        throw new System.exception.InvalidArgumentsException("Invalid arguments supplied, expected (String/String[], Function)");
+        // throw new System.exception.InvalidArgumentsException("Invalid arguments supplied, expected (String/String[], Function)");
     },
     /**
      *
@@ -2210,21 +2246,22 @@ Class('EventEmitter', {
 })
 /**
  * Manage events between components.
+ * This class wraps and handles compatibility between browsers and event management.
  */
 Static.Class('EventManager', {
     /**
-     *
-     * @param target
-     * @param eventName
-     * @param listener
-     * @param useCapture
+     * Adds a listener to the specified target.
+     * @param target {Object} The target which will be observed.
+     * @param eventName {String} The event name.
+     * @param listener {Function} The listener instance.
+     * @param useCapture {Boolean} True to use capture or False otherwise.
      * @returns Target object for chaining.
      */
     'addEventListener': function (target, eventName, listener, useCapture) {
-        if (target instanceof System.EventEmitter) {
+        var ver = System.utils.UserAgent.IE.getVersion();
+        if (is(target, System.EventEmitter)) {
             target.on(eventName, listener, useCapture);
-        } else if (target instanceof Element) {
-            var ver = System.utils.UserAgent.IE.getVersion();
+        } else if ((ver != -1 && ver <= 8) || is(target, Element)) {
             if (ver != -1 && ver < 11) {
                 target.attachEvent("on" + eventName, listener, useCapture);
             } else target.addEventListener(eventName, listener, useCapture);
@@ -2232,17 +2269,17 @@ Static.Class('EventManager', {
         return target;
     },
     /**
-     *
-     * @param target
-     * @param eventName
-     * @param listener
+     * Removes a listener from the specified target instance.
+     * @param target {Object} The target which contains the listener.
+     * @param eventName {String} The event name.
+     * @param listener {Function} The listener instance.
      * @returns Target object for chaining.
      */
     'removeEventListener': function (target, eventName, listener) {
-        if (target instanceof System.EventEmitter) {
+        var ver = System.utils.UserAgent.IE.getVersion();
+        if (is(target, System.EventEmitter)) {
             target.off(eventName, listener);
-        } else if (target instanceof Element) {
-            var ver = System.utils.UserAgent.IE.getVersion();
+        } else if ((ver != -1 && ver <= 8) || is(target, Element)) {
             if (ver != -1 && ver < 11) {
                 target.detachEvent("on" + eventName, listener);
             } else target.removeEventListener(eventName, listener);
@@ -2320,7 +2357,7 @@ Static.Class('Router', {
     'getBaseDir': function () {
         if (!System.Router.baseDir) {
             if (Environment.isNode()) {
-                return path_module.normalize(path_module.resolve(__dirname + "../../../"));
+                return path_module.normalize(path_module.resolve(__dirname + "/../../../"));
             } else if (Environment.isBrowser()) {
                 return "./";
             }
@@ -2382,11 +2419,11 @@ if (Environment.isBrowser()) {
     Static.Class('dom.Browser', {
         'scrollTop': function () {
             var doc = document.documentElement;
-            return (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+            return ($global.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
         },
         'scrollLeft': function () {
             var doc = document.documentElement;
-            return (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+            return ($global.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
         }
     })
 }
@@ -3058,9 +3095,9 @@ if (Environment.isBrowser()) {
                     }
 
                     dependency.each(function (dep) {
-                        requests.push(load(dep, onLoad, async));
+                        requests.push(System.runtime.BrowserLoader.load(dep, onLoad, async));
                     });
-                } else {
+                } else if (dependency.is(String)) {
                     var script = document.createElement("script"), container = document.getElementsByTagName("head")[0];
 
                     script.setAttribute("type", "text/javascript");
@@ -3124,7 +3161,6 @@ if (Environment.isBrowser()) {
  * Created by yadirhb on 9/24/2016.
  */
 if (Environment.isNode()) {
-    var path = require('path');
     Static.Class('runtime.NodeLoader', {
         'load': function load(dependency, callback) {
             var requests;
@@ -3135,19 +3171,32 @@ if (Environment.isNode()) {
                         requests.push(load(dep));
                     });
                 } else {
-                    var sourcesSet = System.Router.getSourcesSet();//["/src/"];
-                    var baseDir = System.Router.getBaseDir();
-                    for (var i = 0; i < sourcesSet.length; i++) {
-                        try {
-                            var dep = dependency;
-                            if (validIdientifierRegex.test(dep)) {
-                                dep = path.normalize(baseDir + "/" + sourcesSet[i] + dep.replaceAll(".", "/"));
+                    if (dependency.is(String)) {
+                        var path = require('path');
+                        var sourcesSet = System.Router.getSourcesSet();
+                        var baseDir = System.Router.getBaseDir();
+
+                        for (var i = 0; i < sourcesSet.length; i++) {
+                            try {
+                                var dep = dependency;
+                                if (validIdientifierRegex.test(dep)) {
+                                    dep = path.normalize(baseDir + "/" + sourcesSet[i] + dep.replaceAll(".", "/"));
+                                }
+
+                                requests = new DependencyRequest(dependency, require(dep));
+                                requests.loaded = true;
+                                break;
+                            } catch (e) {
+                                requests = new DependencyRequest(dependency, e);
                             }
-                            requests = new DependencyRequest(dependency, require(dep));
+                        }
+                    } else if (dependency.is(Object)) {
+                        try {
+                            requests = new DependencyRequest(dependency.member, require(dependency.pkg));
+                            requests.combined = true;
                             requests.loaded = true;
-                            break;
                         } catch (e) {
-                            requests = new DependencyRequest(dependency, e);
+                            throw new System.exception.RuntimeException(e.message);
                         }
                     }
                 }

@@ -6,8 +6,8 @@ module.exports = function (grunt) {
     // Project configuration.
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
-        clean : {
-            build : [buildPath]
+        clean: {
+            build: [buildPath]
         },
         concat: {
             options: {
@@ -62,8 +62,8 @@ module.exports = function (grunt) {
             latestMin: {
                 src: buildPath + '<%= pkg.name%>-<%= pkg.version %>.min.js',
                 dest: distPath + '<%= pkg.name%>-latest.min.js'
-            }
-            ,module : {
+            },
+            module: {
                 expand: true,
                 cwd: buildPath + name + "-npm/",
                 src: '**',
